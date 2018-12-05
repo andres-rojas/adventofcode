@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func readInput(file string) ([]string, error) {
@@ -71,6 +72,28 @@ func checksum(input []string) int64 {
 	return count[0] * count[1]
 }
 
+func findSingleUnique(input []string) string {
+	var char byte
+	var i int
+
+	for i = 0; i < len(input) && char == 0; i++ {
+		for j := i + 1; j < len(input) && char == 0; j++ {
+			for k, found := 0, 0; k < len(input[i]) && found < 2; k++ {
+				if input[i][k] != input[j][k] {
+					found++
+					if found == 1 {
+						char = input[i][k]
+					} else {
+						char = 0
+					}
+				}
+			}
+		}
+	}
+
+	return strings.Replace(input[i-1], string(char), "", 1)
+}
+
 func main() {
 	input, err := readInput("input.txt")
 	if err != nil {
@@ -78,4 +101,5 @@ func main() {
 	}
 
 	fmt.Printf("Part One: %d\n", checksum(input))
+	fmt.Printf("Part Two: %s\n", string(findSingleUnique(input)))
 }
