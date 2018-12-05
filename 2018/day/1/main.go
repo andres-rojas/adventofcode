@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"strconv"
+
+	"github.com/deckarep/golang-set"
 )
 
 func readInput(file string) ([]int64, error) {
@@ -48,16 +50,27 @@ func calcFrequency(input []int64) int64 {
 	return frequency
 }
 
-func partOne() {
+func repeatedFrequency(input []int64) int64 {
+	var frequency int64 = 0
+	frequencies := mapset.NewSet()
+
+	for {
+		for _, change := range input {
+			frequency = frequency + change
+			if frequencies.Contains(frequency) {
+				return frequency
+			}
+			frequencies.Add(frequency)
+		}
+	}
+}
+
+func main() {
 	input, err := readInput("input.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	frequency := calcFrequency(input)
-	fmt.Printf("Part One: %d\n", frequency)
-}
-
-func main() {
-	partOne()
+	fmt.Printf("Part One: %d\n", calcFrequency(input))
+	fmt.Printf("Part Two: %d\n", repeatedFrequency(input))
 }
