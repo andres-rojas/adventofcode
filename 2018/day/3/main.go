@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+
+	"github.com/deckarep/golang-set"
 )
 
 func readInput(file string) ([]string, error) {
@@ -119,14 +121,8 @@ func mapClaims(input []string) ([1000][1000][]int64, error) {
 	return fabric, nil
 }
 
-func overlappedClaims(input []string) (int64, error) {
+func overlappedClaims(fabric [1000][1000][]int64) int64 {
 	var count int64
-
-	fabric, err := mapClaims(input)
-	if err != nil {
-		return 0, err
-	}
-
 	for i := 0; i < 1000; i++ {
 		for j := 0; j < 1000; j++ {
 			if len(fabric[i][j]) > 1 {
@@ -135,7 +131,35 @@ func overlappedClaims(input []string) (int64, error) {
 		}
 	}
 
-	return count, nil
+	return count
+}
+
+func findValidClaims(fabric [1000][1000][]int64) mapset.Set {
+	candidates := mapset.NewSet()
+	rejects := mapset.NewSet()
+
+	for i := 0; i < 1000; i++ {
+		for j := 0; j < 1000; j++ {
+			if len(fabric[i][j]) == 1 {
+				id := fabric[i][j][0]
+				if !candidates.Contains(id) && !rejects.Contains(id) {
+					candidates.Add(id)
+				}
+			}
+			if len(fabric[i][j]) > 1 {
+				for _, id := range fabric[i][j] {
+					if candidates.Contains(id) {
+						candidates.Remove(id)
+					}
+					if !rejects.Contains(id) {
+						rejects.Add(id)
+					}
+				}
+			}
+		}
+	}
+
+	return candidates
 }
 
 func check(err error) {
@@ -148,7 +172,9 @@ func main() {
 	input, err := readInput("input.txt")
 	check(err)
 
-	count, err := overlappedClaims(input)
+	fabric, err := mapClaims(input)
 	check(err)
-	fmt.Printf("Part One: %d\n", count)
+
+	fmt.Printf("Part One: %d\n", overlappedClaims(fabric))
+	fmt.Printf("Part Two: %d\n", findValidClaims(fabric).Pop())
 }
