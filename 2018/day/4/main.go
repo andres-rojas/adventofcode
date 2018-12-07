@@ -149,6 +149,32 @@ func mostFrequentMinuteAsleep(minutesSlept map[int][60]int, guard int) int {
 	return laziestMinute
 }
 
+func peakSleepByMinute(minutesSlept map[int][60]int) [60][2]int {
+	var psbm [60][2]int
+
+	for guard, times := range minutesSlept {
+		for minute, duration := range times {
+			if duration > psbm[minute][1] {
+				psbm[minute] = [2]int{guard, duration}
+			}
+		}
+	}
+
+	return psbm
+}
+
+func mostFrequentSleeper(psbm [60][2]int) (int, int) {
+	var guard, peakMinute, currentMax int
+
+	for minute, record := range psbm {
+		if record[1] > currentMax {
+			guard, peakMinute, currentMax = record[0], minute, record[1]
+		}
+	}
+
+	return guard, peakMinute
+}
+
 func check(err error) {
 	if err != nil {
 		panic(err)
@@ -166,4 +192,8 @@ func main() {
 	laziestGuard := mostAsleep(minutesSlept)
 	laziestMinute := mostFrequentMinuteAsleep(minutesSlept, laziestGuard)
 	fmt.Printf("Part One: %d\n", laziestGuard*laziestMinute)
+
+	psbm := peakSleepByMinute(minutesSlept)
+	sleepiestGuard, peakMinute := mostFrequentSleeper(psbm)
+	fmt.Printf("Part Two: %d\n", sleepiestGuard*peakMinute)
 }
