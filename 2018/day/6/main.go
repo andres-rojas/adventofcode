@@ -157,6 +157,34 @@ func largestArea(plane [][]int) int {
 	return sortedAreas[last]
 }
 
+func plotTotalDistances(coordinates [][2]int) [][]int {
+	plane := initPlane(coordinates)
+
+	for i, row := range plane {
+		for j := range row {
+			for _, coordinate := range coordinates {
+				plane[i][j] = plane[i][j] + manhattanDistance([2]int{i, j}, coordinate)
+			}
+		}
+	}
+
+	return plane
+}
+
+func areaInRange(plane [][]int, distance int) int {
+	var area int
+
+	for _, row := range plane {
+		for _, totalDistance := range row {
+			if totalDistance < distance {
+				area++
+			}
+		}
+	}
+
+	return area
+}
+
 func check(err error) {
 	if err != nil {
 		panic(err)
@@ -172,4 +200,7 @@ func main() {
 
 	plane := plotClosest(coordinates)
 	fmt.Printf("Part One: %d\n", largestArea(plane))
+
+	plane = plotTotalDistances(coordinates)
+	fmt.Printf("Part Two: %d\n", areaInRange(plane, 10000))
 }
