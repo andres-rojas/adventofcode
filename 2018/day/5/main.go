@@ -40,11 +40,53 @@ func reactPolymer(polymer []byte) []byte {
 	return polymer
 }
 
+func cloneByteSlice(s []byte) []byte {
+	clone := make([]byte, len(s))
+	copy(clone, s)
+	return clone
+}
+
+func stripType(polymer []byte, unitType byte) []byte {
+	// Normalize input to uppercase A-Z
+	if unitType > 90 {
+		unitType = unitType - 32
+	}
+
+	for i := 0; i < len(polymer); {
+		if polymer[i] == unitType || polymer[i] == unitType+32 {
+			polymer = append(polymer[:i], polymer[i+1:]...)
+		} else {
+			i++
+		}
+	}
+
+	return polymer
+}
+
+func shortestStrippedPolymer(polymer []byte) []byte {
+	var i byte
+	ssp := polymer
+
+	for i = 65; i <= 90; i++ { // A - Z == 65 - 90
+		strippedPolymer := cloneByteSlice(polymer)
+		strippedPolymer = reactPolymer(stripType(strippedPolymer, i))
+		if len(strippedPolymer) < len(ssp) {
+			ssp = strippedPolymer
+		}
+	}
+
+	return ssp
+}
+
 func main() {
 	input, err := readInput("input.txt")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Part One: %d\n", len(reactPolymer(input)))
+	polymer := cloneByteSlice(input)
+	fmt.Printf("Part One: %d\n", len(reactPolymer(polymer)))
+
+	polymer = cloneByteSlice(input)
+	fmt.Printf("Part Two: %d\n", len(shortestStrippedPolymer(polymer)))
 }
