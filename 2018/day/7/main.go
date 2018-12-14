@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"sort"
 )
 
 func readInput(file string) ([]string, error) {
@@ -78,6 +79,58 @@ func orderedSteps(steps map[rune][]rune) []rune {
 	return oSteps
 }
 
+func timeInParallel(steps map[rune][]rune, workers int) int {
+	var second int
+	activeWork := make(map[rune]int) // maps [step] to time (second) job is done
+
+	for len(steps) > 0 || len(activeWork) > 0 {
+		// Check if any activeWork is done
+		for step, done := range activeWork {
+			if done == second {
+				delete(activeWork, step)
+
+				for i, dependencies := range steps {
+					for j, dependency := range dependencies {
+						if dependency == step {
+							steps[i] = append(steps[i][:j], steps[i][j+1:]...)
+						}
+					}
+				}
+			}
+		}
+
+		// Start work if workers are available
+		if len(activeWork) < workers {
+			var readyWork []int
+			for i, dependencies := range steps {
+				if len(dependencies) == 0 {
+					readyWork = append(readyWork, int(i))
+				}
+			}
+			sort.Ints(readyWork)
+
+			freeWorkers := workers - len(activeWork)
+			if len(readyWork) > freeWorkers {
+				readyWork = readyWork[:freeWorkers]
+			}
+			for _, step := range readyWork {
+				// [A-Z] == [65-90]
+				// step A will take 61 seconds (65 - 4 = 61)
+				// step B will take 62 seconds (66 - 4 = 62)
+				// ...
+				done := second + step - 4
+				activeWork[rune(step)] = done
+				delete(steps, rune(step))
+			}
+		}
+
+		// Time marches on
+		second++
+	}
+
+	return second - 1
+}
+
 func main() {
 	input, err := readInput("input.txt")
 	if err != nil {
@@ -86,4 +139,7 @@ func main() {
 
 	steps := parseDependencies(input)
 	fmt.Printf("Part One: %s\n", string(orderedSteps(steps)))
+
+	steps = parseDependencies(input)
+	fmt.Printf("Part Two: %d\n", timeInParallel(steps, 5))
 }
