@@ -39,41 +39,41 @@ func readInput(file string) (int, int, error) {
 	return playerCount, lastMarble, nil
 }
 
+type Marble struct {
+	Prev, Next *Marble
+	Value      int
+}
+
+func (marble *Marble) InsertAfter(value int) *Marble {
+	inserted := &Marble{Prev: marble, Next: marble.Next, Value: value}
+
+	marble.Next.Prev = inserted
+	marble.Next = inserted
+
+	return inserted
+}
+
+func (marble *Marble) Remove() (int, *Marble) {
+	marble.Prev.Next = marble.Next
+	marble.Next.Prev = marble.Prev
+
+	return marble.Value, marble.Next
+}
+
 func playGame(players int, marbles int) []int {
-	var turn, current, player, next int
 	scores := make([]int, players)
-	circle := []int{0}
+	current := &Marble{Value: 0}
+	current.Prev, current.Next = current, current
 
-	for turn = 1; turn <= marbles; turn++ {
-		if turn%23 == 0 {
-			next = current - 7
-			if next < 0 { // Wrap around circle counter-clockwise
-				next = len(circle) + next
-			}
-
-			scores[player] = scores[player] + turn + circle[next]
-			circle = append(circle[:next], circle[next+1:]...) // Remove marble from circle
+	for player, marble := 0, 1; marble <= marbles; player, marble = (player+1)%players, marble+1 {
+		if marble%23 == 0 {
+			current = current.Prev.Prev.Prev.Prev.Prev.Prev.Prev
+			removed, next := current.Remove()
+			scores[player] = scores[player] + marble + removed
+			current = next
 		} else {
-			if turn > 1 {
-				next = current + 2
-				if next > len(circle) { // Wrap around circle clockwise
-					next = next % len(circle)
-				}
-			} else {
-				next = 1
-			}
-
-			if next == len(circle) { // Add to "end" of circle
-				circle = append(circle, turn)
-			} else { // Insert marble into circle
-				circle = append(circle, 0)
-				copy(circle[next+1:], circle[next:])
-				circle[next] = turn
-			}
+			current = current.Next.InsertAfter(marble)
 		}
-		current = next
-
-		player = (player + 1) % players // Next player
 	}
 
 	return scores
@@ -92,4 +92,7 @@ func main() {
 
 	scores := playGame(playerCount, lastMarble)
 	fmt.Printf("Part One: %d\n", highScore(scores))
+
+	scores = playGame(playerCount, lastMarble*100)
+	fmt.Printf("Part Two: %d\n", highScore(scores))
 }
