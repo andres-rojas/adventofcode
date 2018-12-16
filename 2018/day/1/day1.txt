@@ -44,6 +44,7 @@ Starting with a frequency of zero, what is the resulting frequency after all of 
 frequency have been applied?
 
 --- Part Two ---
+
 You notice that the device repeats the same frequency change list over and over. To calibrate
 the device, you need to find the first frequency it reaches twice.
 
