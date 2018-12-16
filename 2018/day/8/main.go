@@ -75,6 +75,24 @@ func (tree Node) totalMetadata() int {
 	return total
 }
 
+func (tree Node) value() int {
+	total := 0
+
+	if len(tree.Children) > 0 {
+		for _, index := range tree.Metadata {
+			if index > 0 && index <= len(tree.Children) {
+				total = total + tree.Children[index-1].value()
+			}
+		}
+	} else {
+		for _, metadata := range tree.Metadata {
+			total = total + metadata
+		}
+	}
+
+	return total
+}
+
 func main() {
 	input, err := readInput("input.txt")
 	if err != nil {
@@ -83,4 +101,5 @@ func main() {
 
 	tree, _ := parseInput(input, nil)
 	fmt.Printf("Part One: %d\n", tree.totalMetadata())
+	fmt.Printf("Part Two: %d\n", tree.value())
 }
