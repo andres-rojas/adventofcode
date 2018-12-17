@@ -29,11 +29,11 @@ func readInput(file string) (int, int, error) {
 
 	playerCount, err := strconv.Atoi(match[1])
 	if err != nil {
-		return 0, 0, nil
+		return 0, 0, err
 	}
 	lastMarble, err := strconv.Atoi(match[2])
 	if err != nil {
-		return 0, 0, nil
+		return 0, 0, err
 	}
 
 	return playerCount, lastMarble, nil
